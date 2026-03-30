@@ -25,3 +25,12 @@ CREATE TABLE IF NOT EXISTS accounts (
     balance    NUMERIC(15, 2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS watchlist (
+    watchlist_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id      UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    ticker       VARCHAR(20) NOT NULL,
+    company_name VARCHAR(255),
+    added_at     TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, ticker)
+);
