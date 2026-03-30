@@ -34,3 +34,31 @@ CREATE TABLE IF NOT EXISTS watchlist (
     added_at     TIMESTAMP DEFAULT NOW(),
     UNIQUE(user_id, ticker)
 );
+
+CREATE TABLE IF NOT EXISTS portfolio (
+    portfolio_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id      UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    created_at   TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS portfolio_items (
+    item_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    portfolio_id   UUID NOT NULL REFERENCES portfolio(portfolio_id) ON DELETE CASCADE,
+    ticker         VARCHAR(20) NOT NULL,
+    company_name   VARCHAR(255),
+    shares_held    NUMERIC(15,4) NOT NULL DEFAULT 0,
+    purchase_price NUMERIC(15,2) NOT NULL,
+    purchased_at   TIMESTAMP DEFAULT NOW(),
+    UNIQUE(portfolio_id, ticker)
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+    transaction_id  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id         UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    ticker          VARCHAR(20) NOT NULL,
+    type            VARCHAR(4) NOT NULL CHECK (type IN ('BUY', 'SELL')),
+    shares          NUMERIC(15,4) NOT NULL,
+    price_per_share NUMERIC(15,2) NOT NULL,
+    total_amount    NUMERIC(15,2) NOT NULL,
+    executed_at     TIMESTAMP DEFAULT NOW()
+);
