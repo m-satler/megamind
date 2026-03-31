@@ -3,3 +3,9 @@ flask-cors
 psycopg2-binary
 bcrypt
 PyJWT
+TALib
+yfinance
+numpy
+pandas
+pandas-ta
+requests
