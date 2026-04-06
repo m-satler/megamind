@@ -3,9 +3,18 @@ flask-cors
 psycopg2-binary
 bcrypt
 PyJWT
-TALib
 yfinance
 numpy
 pandas
 pandas-ta
-requests
+
+### Install TA-Lib manual for it requires a C library
+### # Mac
+# brew install ta-lib
+# pip install TA-Lib
+
+# Ubuntu/WSL
+# sudo apt-get install ta-lib
+# pip install TA-Lib 
+
+# for windows, download the appropriate wheel file from https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib and install it using pip
