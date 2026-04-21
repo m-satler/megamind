@@ -1,3 +1,22 @@
+# Python
 __pycache__/
 *.pyc
+.venv/
+venv/
+
+# Secrets / local config
 .env
+.env.local
+
+# Trained ML artifacts (regenerated at runtime per ticker/month)
+models/
+scalers/
+model_metrics.txt
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Build / install logs
+*.log
