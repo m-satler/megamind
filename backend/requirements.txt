@@ -6,15 +6,15 @@ PyJWT
 yfinance
 numpy
 pandas
-pandas-ta
+ta
+scikit-learn
+joblib
+tensorflow
 
-### Install TA-Lib manual for it requires a C library
-### # Mac
-# brew install ta-lib
-# pip install TA-Lib
+### Install TA-Lib manually if you want its extra indicators (optional).
+### This project uses the pure-Python `ta` package above, which is enough
+### for the shipped predictor — TA-Lib is NOT required.
 
-# Ubuntu/WSL
-# sudo apt-get install ta-lib
-# pip install TA-Lib 
-
-# for windows, download the appropriate wheel file from https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib and install it using pip
+# Mac:        brew install ta-lib && pip install TA-Lib
+# Ubuntu/WSL: sudo apt-get install ta-lib && pip install TA-Lib
+# Windows:    download wheel from https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib
