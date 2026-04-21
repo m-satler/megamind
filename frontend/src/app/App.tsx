@@ -1,6 +1,14 @@
 import { RouterProvider } from 'react-router';
+import { AuthProvider } from './lib/auth';
+import { UIPrefsProvider } from './lib/ui-prefs';
 import { router } from './routes';
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <UIPrefsProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </UIPrefsProvider>
+  );
 }

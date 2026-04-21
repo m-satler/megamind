@@ -1,38 +1,64 @@
-import { 
-  Home, 
-  TrendingUp, 
-  BarChart3, 
-  Settings, 
-  Bell, 
-  Star,
+import {
+  Home,
+  BarChart3,
+  Settings,
+  Bell,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  ClipboardList,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
-import { useState } from 'react';
+import { useAuth } from '../lib/auth';
 
 interface SidebarProps {
+  // Kept for backwards compatibility with the Home page, which still passes
+  // it. Markets / Watchlist were removed from the sidebar because they're
+  // already surfaced on the dashboard.
   watchlistCount?: number;
 }
 
-export function Sidebar({ watchlistCount = 0 }: SidebarProps) {
+export function Sidebar(_props: SidebarProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [notifications] = useState(3);
+  const { user, logout } = useAuth();
 
   const menuItems = [
-    { icon: Home, label: 'Dashboard', path: '/', badge: null },
-    { icon: TrendingUp, label: 'Markets', path: '/markets', badge: null },
-    { icon: Star, label: 'Watchlist', path: '/', badge: watchlistCount > 0 ? watchlistCount : null },
-    { icon: BarChart3, label: 'Portfolio', path: '/portfolio', badge: null },
-    { icon: Bell, label: 'Alerts', path: '/alerts', badge: notifications },
-    { icon: Settings, label: 'Settings', path: '/settings', badge: null },
+    { icon: Home, label: 'Dashboard', path: '/', badge: null as number | null, exact: true },
+    { icon: BarChart3, label: 'Portfolio', path: '/portfolio', badge: null, exact: false },
+    { icon: ClipboardList, label: 'Account Setup', path: '/survey', badge: null, exact: false },
+    { icon: Bell, label: 'Alerts', path: '/alerts', badge: null, exact: false },
+    { icon: Settings, label: 'Settings', path: '/settings', badge: null, exact: false },
   ];
 
-  const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
+  const isActive = (path: string, exact: boolean) => {
+    if (exact) return location.pathname === path;
     return location.pathname.startsWith(path);
   };
+
+  const handleLogout = () => {
+    if (confirm('Log out of STOCK TERMINAL?')) {
+      logout();
+      navigate('/login', { replace: true });
+    }
+  };
+
+  // Derive initials & display handle from email
+  const email = user?.email ?? '';
+  const initials = email
+    ? email
+        .split('@')[0]
+        .split(/[._-]/)
+        .map((s) => s[0])
+        .filter(Boolean)
+        .slice(0, 2)
+        .join('')
+        .toUpperCase() || email[0].toUpperCase()
+    : '?';
+  const handle = email.split('@')[0] || 'guest';
+  const balance = user?.balance ?? 0;
+  const riskBadge = user?.profile?.risk_tolerance
+    ? user.profile.risk_tolerance.toUpperCase() + ' RISK'
+    : 'SETUP PENDING';
 
   return (
     <div className="fixed left-0 top-0 h-screen w-64 bg-[#0f1420] border-r border-[#1e2538] flex flex-col z-50">
@@ -42,26 +68,32 @@ export function Sidebar({ watchlistCount = 0 }: SidebarProps) {
           <div className="relative">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00d4ff] to-[#a29bfe] p-0.5">
               <div className="w-full h-full rounded-full bg-[#0f1420] flex items-center justify-center">
-                <span className="text-[#00d4ff] font-bold text-lg font-mono">JD</span>
+                <span className="text-[#00d4ff] font-bold text-lg font-mono">{initials}</span>
               </div>
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#2ed573] rounded-full border-2 border-[#0f1420]"></div>
           </div>
-          <div className="flex-1">
-            <h3 className="text-[#e4e8f0] font-semibold text-sm">John Doe</h3>
-            <p className="text-[#7d8aa3] text-xs font-mono">PRO TRADER</p>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[#e4e8f0] font-semibold text-sm truncate" title={email}>
+              {handle}
+            </h3>
+            <p className="text-[#7d8aa3] text-xs font-mono">{riskBadge}</p>
           </div>
         </div>
-        
+
         {/* Account Stats */}
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-[#1a1f2e] rounded p-2 border border-[#1e2538]">
             <p className="text-[#7d8aa3] text-xs font-mono mb-0.5">BALANCE</p>
-            <p className="text-[#e4e8f0] font-bold text-sm font-mono">$24,580</p>
+            <p className="text-[#e4e8f0] font-bold text-sm font-mono">
+              ${balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </p>
           </div>
           <div className="bg-[#1a1f2e] rounded p-2 border border-[#1e2538]">
-            <p className="text-[#7d8aa3] text-xs font-mono mb-0.5">P&L</p>
-            <p className="text-[#2ed573] font-bold text-sm font-mono">+12.4%</p>
+            <p className="text-[#7d8aa3] text-xs font-mono mb-0.5">EXP</p>
+            <p className="text-[#00d4ff] font-bold text-sm font-mono uppercase">
+              {user?.profile?.experience_level ?? 'N/A'}
+            </p>
           </div>
         </div>
       </div>
@@ -69,13 +101,12 @@ export function Sidebar({ watchlistCount = 0 }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
         <div className="space-y-1">
-          {menuItems.map((item) => {
+          {menuItems.map((item, idx) => {
             const Icon = item.icon;
-            const active = isActive(item.path);
-            
+            const active = isActive(item.path, item.exact);
             return (
               <button
-                key={item.path}
+                key={idx}
                 onClick={() => navigate(item.path)}
                 className={`w-full flex items-center justify-between px-3 py-3 rounded transition-all group ${
                   active
@@ -92,15 +123,13 @@ export function Sidebar({ watchlistCount = 0 }: SidebarProps) {
                     {item.badge}
                   </span>
                 )}
-                {active && (
-                  <ChevronRight size={16} className="text-[#00d4ff]" />
-                )}
+                {active && <ChevronRight size={16} className="text-[#00d4ff]" />}
               </button>
             );
           })}
         </div>
 
-        {/* Market Status */}
+        {/* Market Status (static) */}
         <div className="mt-6 mx-3 p-3 bg-[#1a1f2e] rounded border border-[#1e2538]">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#7d8aa3] text-xs font-mono">MARKET STATUS</span>
@@ -126,9 +155,12 @@ export function Sidebar({ watchlistCount = 0 }: SidebarProps) {
         </div>
       </nav>
 
-      {/* Footer Actions */}
+      {/* Footer: logout */}
       <div className="p-4 border-t border-[#1e2538]">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 text-[#7d8aa3] hover:text-[#ff4757] hover:bg-[#ff4757]/10 rounded transition-all border border-transparent hover:border-[#ff4757]/30">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 text-[#7d8aa3] hover:text-[#ff4757] hover:bg-[#ff4757]/10 rounded transition-all border border-transparent hover:border-[#ff4757]/30"
+        >
           <LogOut size={20} />
           <span className="font-semibold text-sm font-mono">LOGOUT</span>
         </button>

@@ -1,0 +1,64 @@
+/**
+ * Theme overrides driven by [data-theme] on <html>.
+ *
+ * The pages were built with hard-coded Tailwind arbitrary values like
+ * `bg-[#0a0e1a]`, `text-[#e4e8f0]`, etc. Rather than refactor every page,
+ * we re-map those specific compiled class selectors per theme. Only the
+ * layout colours (backgrounds, text, borders) are remapped — semantic
+ * colours (red for loss, green for gain, purple for AI) are preserved.
+ *
+ * Tailwind compiles `bg-[#0a0e1a]` → `.bg-\[\#0a0e1a\]` (hash & brackets
+ * are escaped with backslashes). We target those same selectors.
+ *
+ * `midnight` is the default palette used by the raw hex values, so it
+ * needs no overrides.
+ */
+
+/* ─────────────────────────── SLATE ─────────────────────────────────── */
+html[data-theme='slate'] {
+  background-color: #1a1f2e;
+}
+html[data-theme='slate'] .bg-\[\#0a0e1a\] { background-color: #1a1f2e; }
+html[data-theme='slate'] .bg-\[\#0f1420\] { background-color: #242b3d; }
+html[data-theme='slate'] .bg-\[\#1a1f2e\] { background-color: #2c344a; }
+html[data-theme='slate'] .bg-\[\#1e2538\] { background-color: #30384a; }
+html[data-theme='slate'] .border-\[\#1e2538\] { border-color: #30384a; }
+html[data-theme='slate'] .text-\[\#e4e8f0\] { color: #ecf0f5; }
+html[data-theme='slate'] .text-\[\#7d8aa3\] { color: #8a97b0; }
+
+/* ─────────────────────────── EMBER ─────────────────────────────────── */
+html[data-theme='ember'] {
+  background-color: #14100d;
+}
+html[data-theme='ember'] .bg-\[\#0a0e1a\] { background-color: #14100d; }
+html[data-theme='ember'] .bg-\[\#0f1420\] { background-color: #1d1814; }
+html[data-theme='ember'] .bg-\[\#1a1f2e\] { background-color: #251e19; }
+html[data-theme='ember'] .bg-\[\#1e2538\] { background-color: #2d2520; }
+html[data-theme='ember'] .border-\[\#1e2538\] { border-color: #2d2520; }
+html[data-theme='ember'] .text-\[\#e4e8f0\] { color: #f0e6da; }
+html[data-theme='ember'] .text-\[\#7d8aa3\] { color: #a89484; }
+
+/* ─────────────────────────── SOLAR (light) ─────────────────────────── */
+html[data-theme='solar'] {
+  background-color: #fdf6e3;
+}
+html[data-theme='solar'] .bg-\[\#0a0e1a\] { background-color: #fdf6e3; }
+html[data-theme='solar'] .bg-\[\#0f1420\] { background-color: #eee8d5; }
+html[data-theme='solar'] .bg-\[\#1a1f2e\] { background-color: #e3dcc4; }
+html[data-theme='solar'] .bg-\[\#1e2538\] { background-color: #d6cfae; }
+html[data-theme='solar'] .border-\[\#1e2538\] { border-color: #d6cfae; }
+html[data-theme='solar'] .border-\[\#1e2538\]\/50 { border-color: rgba(214, 207, 174, 0.5); }
+html[data-theme='solar'] .text-\[\#e4e8f0\] { color: #073642; }
+html[data-theme='solar'] .text-\[\#7d8aa3\] { color: #586e75; }
+/* Accent buttons use text-[#0a0e1a] for contrast against cyan — still works in solar */
+
+/* ───────────────────── DENSITY ──────────────────────────────────────── */
+/* `compact` shaves padding on common panel classes for a denser layout. */
+html[data-density='compact'] .p-6 { padding: 1rem; }
+html[data-density='compact'] .p-5 { padding: 0.875rem; }
+html[data-density='compact'] .py-6 { padding-top: 1rem; padding-bottom: 1rem; }
+html[data-density='compact'] .py-8 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+html[data-density='compact'] .mb-6 { margin-bottom: 1rem; }
+html[data-density='compact'] .mb-8 { margin-bottom: 1.25rem; }
+html[data-density='compact'] .gap-4 { gap: 0.75rem; }
+html[data-density='compact'] .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
