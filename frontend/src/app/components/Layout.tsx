@@ -1,24 +1,32 @@
 import { Outlet } from 'react-router';
 import { Sidebar } from '../components/Sidebar';
 import { useState, useEffect } from 'react';
+import { getWatchlist, getToken } from '../lib/api';
 
 export function Layout() {
   const [watchlistCount, setWatchlistCount] = useState(0);
 
-  // Listen for watchlist changes from localStorage or state management
+  // Pull the count from the server (scoped by JWT) rather than a shared
+  // browser-wide localStorage key. Refreshes whenever any page dispatches
+  // `watchlist-updated` after adding/removing a ticker.
   useEffect(() => {
-    const updateWatchlistCount = () => {
-      const watchlist = localStorage.getItem('watchlist');
-      if (watchlist) {
-        setWatchlistCount(JSON.parse(watchlist).length);
+    const refresh = async () => {
+      if (!getToken()) {
+        setWatchlistCount(0);
+        return;
+      }
+      try {
+        const { watchlist } = await getWatchlist();
+        setWatchlistCount(watchlist.length);
+      } catch {
+        setWatchlistCount(0);
       }
     };
 
-    updateWatchlistCount();
-    window.addEventListener('watchlist-updated', updateWatchlistCount);
-
+    refresh();
+    window.addEventListener('watchlist-updated', refresh);
     return () => {
-      window.removeEventListener('watchlist-updated', updateWatchlistCount);
+      window.removeEventListener('watchlist-updated', refresh);
     };
   }, []);
 

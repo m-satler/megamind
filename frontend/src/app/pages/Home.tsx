@@ -2,7 +2,13 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Search, TrendingUp, Activity, RefreshCw } from 'lucide-react';
 import { StockCard } from '../components/StockCard';
 import { WatchlistItem } from '../components/WatchlistItem';
-import { fetchQuotes, type Quote } from '../lib/api';
+import {
+  fetchQuotes,
+  getWatchlist,
+  addWatchlist,
+  removeWatchlist,
+  type Quote,
+} from '../lib/api';
 
 // Tickers the terminal tracks by default. Edit freely.
 const DEFAULT_TICKERS = [
@@ -10,25 +16,12 @@ const DEFAULT_TICKERS = [
   'NVDA', 'NFLX', 'DIS', 'INTC', 'AMD', 'CRM',
 ];
 
-const WATCHLIST_STORAGE_KEY = 'watchlist';
-
-function loadWatchlist(): string[] {
-  try {
-    const raw = localStorage.getItem(WATCHLIST_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveWatchlist(list: string[]) {
-  localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(list));
-  window.dispatchEvent(new Event('watchlist-updated'));
-}
-
 export function Home() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [watchlist, setWatchlist] = useState<string[]>(() => loadWatchlist());
+  // Watchlist lives on the server, keyed by the logged-in user. We hydrate
+  // from the API on mount; no browser-wide localStorage key (which used to
+  // leak watchlists between accounts sharing the same browser).
+  const [watchlist, setWatchlist] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'watchlist'>('all');
   const [stocks, setStocks] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,6 +51,20 @@ export function Home() {
     load();
   }, [load]);
 
+  // Hydrate the watchlist from the server on mount. Each user's rows are
+  // scoped by the JWT on the backend, so logging in as a different user
+  // gets that user's list — not whatever was left in the browser.
+  useEffect(() => {
+    (async () => {
+      try {
+        const { watchlist: rows } = await getWatchlist();
+        setWatchlist(rows.map((r) => r.ticker));
+      } catch {
+        setWatchlist([]);
+      }
+    })();
+  }, []);
+
   const filteredStocks = useMemo(() => {
     const q = searchQuery.toLowerCase();
     return stocks.filter(
@@ -70,12 +77,28 @@ export function Home() {
     [watchlist, stocks]
   );
 
-  const toggleWatchlist = (symbol: string) => {
-    setWatchlist((prev) => {
-      const next = prev.includes(symbol) ? prev.filter((s) => s !== symbol) : [...prev, symbol];
-      saveWatchlist(next);
-      return next;
-    });
+  const toggleWatchlist = async (symbol: string) => {
+    const inList = watchlist.includes(symbol);
+    // Optimistic update so the UI feels instant.
+    setWatchlist((prev) =>
+      inList ? prev.filter((s) => s !== symbol) : [...prev, symbol]
+    );
+    try {
+      if (inList) {
+        await removeWatchlist(symbol);
+      } else {
+        const company = stocks.find((s) => s.symbol === symbol)?.name ?? '';
+        await addWatchlist(symbol, company);
+      }
+      // Let the sidebar badge refresh.
+      window.dispatchEvent(new Event('watchlist-updated'));
+    } catch (e: any) {
+      // Roll back on failure.
+      setWatchlist((prev) =>
+        inList ? [...prev, symbol] : prev.filter((s) => s !== symbol)
+      );
+      setError(e?.message ?? 'Failed to update watchlist');
+    }
   };
 
   const gainers = stocks.filter((s) => s.change > 0).length;
