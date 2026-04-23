@@ -9,6 +9,7 @@ import { Survey } from './pages/Survey';
 import { Portfolio } from './pages/Portfolio';
 import { Alerts } from './pages/Alerts';
 import { Settings } from './pages/Settings';
+import { Compare } from './pages/Compare';
 
 export const router = createBrowserRouter([
   // Public
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
       { index: true, Component: Home },
       { path: 'stock/:symbol', Component: StockDetail },
       { path: 'portfolio', Component: Portfolio },
+      { path: 'compare', Component: Compare },
       { path: 'alerts', Component: Alerts },
       { path: 'settings', Component: Settings },
     ],

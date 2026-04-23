@@ -6,6 +6,7 @@ import {
   LogOut,
   ChevronRight,
   ClipboardList,
+  LineChart,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../lib/auth';
@@ -25,6 +26,7 @@ export function Sidebar(_props: SidebarProps = {}) {
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/', badge: null as number | null, exact: true },
     { icon: BarChart3, label: 'Portfolio', path: '/portfolio', badge: null, exact: false },
+    { icon: LineChart, label: 'Compare', path: '/compare', badge: null, exact: false },
     { icon: ClipboardList, label: 'Account Setup', path: '/survey', badge: null, exact: false },
     { icon: Bell, label: 'Alerts', path: '/alerts', badge: null, exact: false },
     { icon: Settings, label: 'Settings', path: '/settings', badge: null, exact: false },
